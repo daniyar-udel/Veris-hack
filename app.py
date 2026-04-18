@@ -84,9 +84,9 @@ def inject_styles() -> None:
         }
 
         .brand img {
-          height: 14rem;
+          height: 22rem;
           width: auto;
-          filter: drop-shadow(0 0 24px rgba(0, 102, 255, 0.55));
+          filter: drop-shadow(0 0 32px rgba(0, 102, 255, 0.6));
         }
 
         [data-testid="stColumn"] {
@@ -182,10 +182,10 @@ def inject_styles() -> None:
           font-size: 0.92rem;
         }
 
-        .p0 { background: #d6e4ff; color: #0044cc; }
-        .p1 { background: #cceeff; color: #006699; }
-        .p2 { background: #e2eaf5; color: #4a6394; }
-        .p3 { background: #edf0f5; color: #7a8faa; }
+        .p0 { background: #ffe0e0; color: #cc0000; }
+        .p1 { background: #fff0e0; color: #cc6600; }
+        .p2 { background: #fffbe0; color: #997700; }
+        .p3 { background: #e6f9e6; color: #2d7a2d; }
 
         .row-summary {
           font-size: 1.02rem;
@@ -250,8 +250,17 @@ def relative_run_time(iso_timestamp: str | None, scanned_count: int) -> str:
     return f"{scanned_count} emails scanned - last run {ago}"
 
 
+PRIORITY_LABELS = {
+    "P0": "Critical",
+    "P1": "High",
+    "P2": "Medium",
+    "P3": "Low",
+}
+
+
 def get_action_label(action: str) -> str:
     labels = {
+        "respond_5min": "Respond in 5 min",
         "respond_1h": "Respond in 1h",
         "respond_24h": "Respond in 24h",
         "respond_72h": "Respond in 72h",
@@ -389,7 +398,7 @@ def render_results(results: list[dict[str, Any]]) -> None:
 
             with cols[1]:
                 st.markdown(
-                    f'<span class="priority-pill {priority}">{email.get("priority")}</span>',
+                    f'<span class="priority-pill {priority}">{PRIORITY_LABELS.get(email.get("priority"), email.get("priority"))}</span>',
                     unsafe_allow_html=True,
                 )
 
@@ -413,7 +422,7 @@ def render_results(results: list[dict[str, Any]]) -> None:
 
             with cols[4]:
                 if email.get("priority") == "P0":
-                    if st.button("Call me now", key=f"call-{email_id}", use_container_width=True):
+                    if st.button("Call Now", key=f"call-{email_id}", use_container_width=True):
                         st.session_state["call_results"][email_id] = trigger_call(email)
                 if email.get("suggested_action") == "archive":
                     st.caption("Auto-archived")
@@ -442,13 +451,13 @@ def render_results(results: list[dict[str, Any]]) -> None:
                     st.write(email.get("body") or "_No body available_")
                 with right:
                     st.write("**Draft opening**")
-                    st.code(email.get("draft_opening") or "No draft available.", language="text")
+                    st.write(email.get("draft_opening") or "No draft available.")
                     if intel:
                         st.write("**Company intel source**")
                         st.write(intel.get("source_url") or "Bundled demo data")
                     if call_result:
                         st.write("**VoiceRun script**")
-                        st.code(call_result.get("script", ""), language="text")
+                        st.write(call_result.get("script", ""))
 
 
 inject_styles()
