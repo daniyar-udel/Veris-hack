@@ -1,43 +1,77 @@
 # LeadGuard
 
-AI inbox triage demo for prioritizing revenue-critical emails, enriching sender context, and escalating the top opportunity with a live phone call.
+LeadGuard is an AI inbox triage demo for finding the highest-value inbound emails, enriching sender context, drafting the response opening, and escalating the top alert with a live phone call.
 
-## What it does
+The app is built as a hackathon-ready workflow with a simple, reliable pipeline:
 
-LeadGuard scans a bundled inbox of 20 emails and runs a simple decision pipeline:
-
-1. Load demo emails from `data/emails.json`
-2. Classify each email with Baseten
-3. Enrich `P0` and `P1` senders with You.com company intel
-4. Surface a reply draft and cost-to-ignore in Streamlit
+1. Load a bundled inbox of demo emails
+2. Classify each email by urgency and revenue impact
+3. Enrich top-priority senders with company intel
+4. Surface draft replies and cost-to-ignore in the UI
 5. Trigger a live VoiceRun call for the top `P0`
-6. Evaluate the classifier locally and in Veris
+6. Evaluate the agent locally and in Veris
 
-## Stack
+## Stack Used
 
-- `Streamlit` for the demo UI
-- `Baseten` for structured email classification
-- `You.com` for sender enrichment
-- `VoiceRun` for outbound escalation calls
-- `Veris` for simulation and evaluation
+- `Python 3.12`
+- `Streamlit` for the product demo UI
+- `Baseten` using an OpenAI-compatible endpoint for classification
+- `DeepSeek-V3.1` via Baseten as the live classification model
+- `You.com Search API` for company enrichment
+- `VoiceRun / Primvoices` for outbound phone escalation
+- `FastAPI` for the Veris HTTP adapter
+- `Veris CLI + Veris Sandbox` for simulation and evaluation
+- `requests` and `python-dotenv` for provider integration
 
-## Run locally
+## Final Project Structure
 
-Install dependencies:
+The project is intentionally kept flat at the root so it is easy to demo, debug, and hand off quickly.
 
-```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```text
+Veris-hack/
+|-- .veris/
+|   |-- .dockerignore
+|   |-- config.yaml
+|   |-- Dockerfile.sandbox
+|   `-- veris.yaml
+|-- assets/
+|   `-- logo.png
+|-- data/
+|   `-- emails.json
+|-- agent.py
+|-- app.py
+|-- email_loader.py
+|-- enricher.py
+|-- escalator.py
+|-- requirements.txt
+|-- veris_api.py
+|-- veris_eval.py
+|-- voicerun_handler.py
+|-- .env.example
+`-- README.md
 ```
 
-Create `.env` from `.env.example`, then run the app:
+## File Guide
 
-```powershell
-.\.venv\Scripts\streamlit.exe run app.py
-```
+- `app.py` - Streamlit UI, metrics, scan flow, sorted results, and escalation button
+- `agent.py` - Baseten classification plus heuristic fallback
+- `email_loader.py` - loads the bundled inbox and supports one-time dataset regeneration
+- `enricher.py` - You.com enrichment for `P0` and `P1` emails
+- `escalator.py` - VoiceRun outbound call logic
+- `veris_api.py` - FastAPI wrapper that exposes classification over HTTP for Veris
+- `veris_eval.py` - local evaluation harness for core pitch scenarios
+- `voicerun_handler.py` - minimal VoiceRun handler reference for the deployed call agent
+- `data/emails.json` - bundled inbox used in the demo
+- `assets/logo.png` - branding asset used by the UI
+- `.veris/veris.yaml` - Veris target config
+- `.veris/Dockerfile.sandbox` - Veris sandbox build definition
+- `.veris/config.yaml` - current local Veris environment mapping for this repo
 
-## Environment variables
+## Environment Variables
 
-Required for the full live demo:
+Create `.env` from `.env.example`.
+
+Full live demo configuration:
 
 ```env
 BASETEN_API_KEY=
@@ -57,49 +91,54 @@ PHONE_NUMBER=+15555555555
 DEMO_MODE=true
 ```
 
-Notes:
+Fallback behavior:
 
-- If `BASETEN_API_KEY` is missing, the app falls back to heuristic classification.
-- If `YOUCOM_API_KEY` is missing, the app falls back to bundled demo intel for known domains.
-- If VoiceRun is not configured and `DEMO_MODE=true`, escalation returns a simulated success.
+- If `BASETEN_API_KEY` is missing, the app uses heuristic classification
+- If `YOUCOM_API_KEY` is missing, the app falls back to bundled company intel where available
+- If VoiceRun is not configured and `DEMO_MODE=true`, the escalation path returns a simulated success
 
-## Project structure
+## Run Locally
 
-- `app.py` - Streamlit UI and demo flow
-- `agent.py` - Baseten classification plus heuristic fallback
-- `email_loader.py` - bundled inbox loader and optional dataset regeneration
-- `enricher.py` - You.com sender enrichment
-- `escalator.py` - VoiceRun outbound call trigger
-- `veris_api.py` - FastAPI adapter for Veris HTTP evaluation
-- `veris_eval.py` - local evaluation harness
-- `voicerun_handler.py` - minimal VoiceRun handler reference
-- `data/emails.json` - bundled demo inbox
-- `assets/logo.png` - app branding asset
-- `.veris/veris.yaml` - Veris target config
-- `.veris/Dockerfile.sandbox` - Veris sandbox build file
-- `.veris/config.yaml` - local Veris environment mapping
+Install dependencies:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+Run the app:
+
+```powershell
+.\.venv\Scripts\streamlit.exe run app.py
+```
+
+Basic smoke test:
+
+1. Click `Scan & Classify`
+2. Open the top `P0` row
+3. Verify summary, cost-to-ignore, draft opening, and company intel
+4. Click `Call me now`
 
 ## Evaluation
 
-Run the local eval:
+Run the local evaluation harness:
 
 ```powershell
 .\.venv\Scripts\python.exe veris_eval.py
 ```
 
-Expected output includes:
+Expected outputs include:
 
 - `pass_rate`
 - `p0_precision`
 - `no_false_p0_on_spam`
 
-Run the Veris adapter locally:
+Run the Veris HTTP adapter locally:
 
 ```powershell
 .\.venv\Scripts\uvicorn.exe veris_api:app --host 0.0.0.0 --port 8008
 ```
 
-## Veris workflow
+## Veris Workflow
 
 This repo is already wired for Veris with a single target in `.veris/veris.yaml`.
 
@@ -112,23 +151,24 @@ Typical commands:
 .\.venv\Scripts\veris.exe run --scenario-set-id <SCENARIO_SET_ID> --report
 ```
 
-If you want to download the generated report:
+Download a generated report:
 
 ```powershell
 .\.venv\Scripts\veris.exe reports get <REPORT_ID> -o veris-report.html
 ```
 
-## Demo flow
+## Demo Flow
 
 1. Launch the app
 2. Click `Scan & Classify`
-3. Open the top `P0`
-4. Show summary, cost-to-ignore, draft opening, and company intel
+3. Show the top `P0` and the total risk metrics
+4. Open the row and show the summary, company intel, and reply draft
 5. Click `Call me now`
-6. Close with the Veris or local eval result
+6. Close with local eval or Veris results
 
-## Safety
+## Notes
 
-- Keep real credentials only in `.env`
-- Do not commit `.env`
+- The product is intentionally demo-first and uses a bundled inbox instead of Gmail
+- The top-level structure is intentionally flat for faster hackathon debugging
+- Real credentials should only live in `.env`
 - `.env.example` must stay placeholder-only
