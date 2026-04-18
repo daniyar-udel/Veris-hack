@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from typing import Any
 
@@ -163,13 +164,46 @@ def classify_with_baseten(email: dict[str, Any]) -> dict[str, Any] | None:
     }
     payload = {
         "model": model,
-        "temperature": 0.1,
+        "temperature": 0,
         "messages": [
             {
                 "role": "system",
                 "content": (
-                    "You are InboxROI, an email revenue triage assistant. "
-                    "Return strict JSON only and do not include markdown."
+                    "You are LeadGuard, an AI revenue triage assistant for B2B SaaS sales teams. "
+                    "Classify inbound emails by urgency and revenue impact. "
+                    "Return strict JSON only, no markdown.\n\n"
+                    "PRIORITY RULES — apply in order, stop at first match:\n\n"
+                    "P0 — All three must be explicitly stated in the email:\n"
+                    "  1. Sender role shows decision-making authority (VP, Director, CEO, CIO, procurement lead, steering committee member)\n"
+                    "  2. A specific dollar budget is mentioned (e.g. '$500K', '$380,000')\n"
+                    "  3. A hard deadline within 7 days is stated (e.g. 'today', 'by Thursday', '48 hours', 'close of business', 'this week')\n"
+                    "  If any one of the three is missing, do not assign P0.\n\n"
+                    "P0 VERIFICATION — Before assigning P0, you must be able to quote all three directly from the email text:\n"
+                    "  - The exact dollar figure (e.g. '$500K')\n"
+                    "  - The exact deadline phrase (e.g. 'by Thursday')\n"
+                    "  - The sender's explicit job title or authority role\n"
+                    "  If you cannot quote all three verbatim from the email, you must assign P1 or lower.\n\n"
+                    "P1 — Strong buying signal present. Examples: vendor shortlist, active procurement, pricing request, "
+                    "implementation timeline discussion, existing customer renewal or expansion, pilot evaluation in progress. "
+                    "Budget OR urgency present but not both.\n\n"
+                    "P2 — Early-stage interest only. No budget, no deadline, no active procurement. "
+                    "Sender is exploring, asking general questions, or requesting an intro with no commitment signals.\n\n"
+                    "P3 — Spam, phishing, newsletters, event invitations, internal digests, billing notices, "
+                    "'final notice' or 'wire transfer' emails, no-reply senders, personal curiosity with no business context. "
+                    "Always: suggested_action = 'archive', cost_to_ignore = 0.\n\n"
+                    "CATEGORY RULES:\n"
+                    "- inbound_lead: new prospect reaching out for the first time\n"
+                    "- customer: existing customer (mentions renewal, current contract, pilot already started, expansion)\n"
+                    "- vendor: someone trying to sell you something\n"
+                    "- internal: your own company domain\n"
+                    "- spam: unsolicited, fraudulent, or irrelevant\n\n"
+                    "COST TO IGNORE:\n"
+                    "- If an explicit dollar amount is written in the email body, use it directly.\n"
+                    "- If no dollar amount is written in the email body, set to 0. No exceptions.\n"
+                    "- Do not estimate, infer, or derive a number from context, company size, or deal signals.\n\n"
+                    "STRICT RULE — Base every field on evidence in the email only. "
+                    "Do not infer authority, budget, or deadlines not written in the email. "
+                    "If no clear business evidence exists, classify as P3 and archive."
                 ),
             },
             {"role": "user", "content": build_classification_prompt(email)},
@@ -357,5 +391,6 @@ def sort_emails(emails: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def classify_all(emails: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    classified = [classify_email(email) for email in emails]
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        classified = list(executor.map(classify_email, emails))
     return sort_emails(classified)
