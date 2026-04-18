@@ -1,0 +1,7 @@
+active_target: inboxroi-agent-env
+profiles:
+  default:
+    targets:
+      inboxroi-agent-env:
+        config_synced_at: '2026-04-18T20:33:16.806352Z'
+        environment_id: env_0jdabw9pvdxzst9a98js0
