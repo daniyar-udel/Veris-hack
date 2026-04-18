@@ -14,6 +14,7 @@ load_dotenv()
 
 PRIORITY_ORDER = {"P0": 0, "P1": 1, "P2": 2, "P3": 3}
 SLA_HOURS = {
+    "respond_5min": 0.08,
     "respond_1h": 1,
     "respond_24h": 24,
     "respond_72h": 72,
@@ -34,7 +35,7 @@ CLASSIFICATION_SCHEMA: dict[str, Any] = {
         "confidence": {"type": "number", "minimum": 0, "maximum": 1},
         "suggested_action": {
             "type": "string",
-            "enum": ["respond_1h", "respond_24h", "respond_72h", "archive"],
+            "enum": ["respond_5min", "respond_1h", "respond_24h", "respond_72h", "archive"],
         },
         "draft_opening": {"type": "string"},
     },
@@ -118,9 +119,9 @@ def normalize_classification(raw: dict[str, Any], email: dict[str, Any]) -> dict
     if category not in {"inbound_lead", "customer", "vendor", "internal", "spam"}:
         category = "vendor"
 
-    suggested_action = raw.get("suggested_action", "respond_72h")
+    suggested_action = raw.get("suggested_action", "respond_24h")
     if suggested_action not in SLA_HOURS:
-        suggested_action = "respond_72h"
+        suggested_action = "respond_24h"
 
     cost_to_ignore = raw.get("cost_to_ignore", 0)
     try:
@@ -165,6 +166,7 @@ def classify_with_baseten(email: dict[str, Any]) -> dict[str, Any] | None:
     payload = {
         "model": model,
         "temperature": 0,
+        "seed": 42,
         "messages": [
             {
                 "role": "system",
@@ -201,6 +203,11 @@ def classify_with_baseten(email: dict[str, Any]) -> dict[str, Any] | None:
                     "- If an explicit dollar amount is written in the email body, use it directly.\n"
                     "- If no dollar amount is written in the email body, set to 0. No exceptions.\n"
                     "- Do not estimate, infer, or derive a number from context, company size, or deal signals.\n\n"
+                    "SUGGESTED ACTION — must match priority exactly:\n"
+                    "- P0 → respond_5min\n"
+                    "- P1 → respond_1h\n"
+                    "- P2 → respond_72h\n"
+                    "- P3 → archive\n\n"
                     "STRICT RULE — Base every field on evidence in the email only. "
                     "Do not infer authority, budget, or deadlines not written in the email. "
                     "If no clear business evidence exists, classify as P3 and archive."
