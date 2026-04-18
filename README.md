@@ -28,6 +28,8 @@ Streamlit demo for triaging inbound email by urgency, revenue impact, and next a
 - `veris_eval.py` - Local evaluation harness for three pitch scenarios
 - `veris_api.py` - Optional FastAPI wrapper for Veris sandbox integration
 - `voicerun_handler.py` - Reference VoiceRun handler to speak generated alert scripts
+- `.veris/veris.yaml` - Veris environment config for HTTP-based agent evaluation
+- `.env.example` - Placeholder environment template with no real credentials
 
 ## Team split
 
@@ -39,7 +41,6 @@ Primary files:
 
 - `app.py`
 - `agent.py`
-- `enricher.py`
 - `data/emails.json`
 
 Responsibilities:
@@ -50,7 +51,6 @@ Responsibilities:
 - Replace heuristic classification with live Baseten once the key is available.
 - Confirm the Baseten model slug that actually exists in the workspace.
 - Tune prompts so P0, P1, and P3 outputs are stable on live inputs.
-- Turn on You.com enrichment for P0 and P1 rows inside the UI.
 - Verify sorting, metrics, draft text, confidence display, and expanders.
 
 Definition of done:
@@ -60,10 +60,11 @@ Definition of done:
 - Cost-to-ignore, draft opening, and company intel are visible.
 - App looks presentation-ready on one laptop screen.
 
-### Daniyar - VoiceRun, Veris, and live demo reliability
+### Daniyar - VoiceRun, You.com, Veris, and live demo reliability
 
 Primary files:
 
+- `enricher.py`
 - `escalator.py`
 - `voicerun_handler.py`
 - `veris_eval.py`
@@ -74,8 +75,10 @@ Primary files:
 Responsibilities:
 
 - Own the live integrations that make the demo credible and memorable.
+- Get a real `YOUCOM_API_KEY` and make company intel work for `P0` and `P1` rows.
 - Get real `VOICERUN_API_KEY`, `VOICERUN_AGENT_ID`, `VOICERUN_ENVIRONMENT`, and `PHONE_NUMBER`.
 - Make outbound calling work from the `Call me now` button.
+- Verify the search response looks useful and grounded before it reaches the UI.
 - Confirm the spoken script sounds clean and urgent enough for the demo.
 - Run the local evaluation harness and capture results for the pitch.
 - If time allows, log into Veris, create the environment, and push the HTTP wrapper.
@@ -102,6 +105,7 @@ This is the recommended order for your track.
 
 Create `.env` from `.env.example` and fill in:
 
+- `YOUCOM_API_KEY`
 - `VOICERUN_API_KEY`
 - `VOICERUN_AGENT_ID`
 - `VOICERUN_ENVIRONMENT`
@@ -179,8 +183,8 @@ If you do not finish the full Veris loop, the local eval in `veris_eval.py` is e
 
 ### Hour 3
 
-- Beibarys: You.com enrichment and UI cleanup
-- Daniyar: run `veris_eval.py`, then try Veris login and push if available
+- Beibarys: UI cleanup and final demo polish
+- Daniyar: You.com live enrichment, run `veris_eval.py`, then try Veris login and push if available
 
 ### Hour 4
 
@@ -205,3 +209,4 @@ Use this exact order on stage:
 - If `BASETEN_API_KEY` is missing, the app uses a deterministic heuristic classifier so the UI still works.
 - If `YOUCOM_API_KEY` is missing, bundled demo intel is shown for known company domains.
 - If VoiceRun variables are missing, escalation returns a simulated success when `DEMO_MODE=true`.
+- Keep real credentials only in `.env`; `.env.example` should remain placeholder-only for safe commits.
