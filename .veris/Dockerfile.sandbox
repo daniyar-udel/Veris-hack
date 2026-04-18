@@ -1,0 +1,8 @@
+ARG GVISOR_BASE
+FROM ${GVISOR_BASE}
+
+COPY requirements.txt /agent/
+RUN pip install -r /agent/requirements.txt
+
+COPY . /agent
+WORKDIR /agent

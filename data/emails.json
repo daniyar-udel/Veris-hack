@@ -1,0 +1,142 @@
+[
+  {
+    "id": "email-01",
+    "from": "John Smith <john.smith@acmecorp.com>",
+    "subject": "CEO intro: enterprise rollout budget approved this week",
+    "body": "Our CEO asked me to reach out directly. We have a $500K budget approved for an enterprise rollout and want to make a decision by Thursday. Can your team support a fast security and implementation review this afternoon?",
+    "hint": "VIP"
+  },
+  {
+    "id": "email-02",
+    "from": "Sarah Chen <sarah.chen@globex.com>",
+    "subject": "Vendor selection shortlist - final demo request before Friday",
+    "body": "I'm leading procurement for our operations transformation program. We're down to two vendors, budget is around $380K, and we need one more live workflow demo before the committee meets in 48 hours.",
+    "hint": "VIP"
+  },
+  {
+    "id": "email-03",
+    "from": "Mike Torres <mike@initech.io>",
+    "subject": "Follow-up on last week's demo for compliance ops",
+    "body": "Really appreciated the walkthrough. We're a 45-person team and would like pricing plus a proposed rollout plan for our compliance operations use case. If it looks good, we'll move quickly.",
+    "hint": ""
+  },
+  {
+    "id": "email-04",
+    "from": "Lisa Park <lisa@umbrellainc.com>",
+    "subject": "Renewal window closes next week for $30K annual contract",
+    "body": "We're deciding on our annual renewal next Tuesday and may expand seats if we can align on support and timing. This is tied to our Q2 planning cycle, so a prompt response would help.",
+    "hint": "VIP"
+  },
+  {
+    "id": "email-05",
+    "from": "newsletter@tech.io",
+    "subject": "Weekly product digest and 15 AI tools you should try",
+    "body": "Here's your weekly newsletter. Click here to read the full issue and unsubscribe anytime.",
+    "hint": ""
+  },
+  {
+    "id": "email-06",
+    "from": "Priya Malhotra <priya@northstarretail.com>",
+    "subject": "Budget signed off, can we talk tomorrow morning?",
+    "body": "We just got internal signoff on a $220K modernization initiative for store operations. If your team can support an implementation discovery call tomorrow, I'd like to keep this moving.",
+    "hint": ""
+  },
+  {
+    "id": "email-07",
+    "from": "Arjun Rao <arjun@redwoodhealth.org>",
+    "subject": "Need security answers for healthcare workflow pilot",
+    "body": "We're evaluating a workflow automation pilot across two regional clinics. Security, audit logging, and HIPAA posture are the main blockers before we recommend next steps to the CIO.",
+    "hint": ""
+  },
+  {
+    "id": "email-08",
+    "from": "Kim Alvarez <kim@brightbank.co>",
+    "subject": "Procurement questions and target launch date",
+    "body": "We're preparing a proposal package for leadership and need details on implementation support, SOC 2, and pricing. Our target launch is late next month and I want to move this forward quickly.",
+    "hint": ""
+  },
+  {
+    "id": "email-09",
+    "from": "Avery Brooks <avery@apexlogistics.com>",
+    "subject": "Can you share references from operations teams?",
+    "body": "Your platform came up in a referral from one of our partners. We'd like customer references and a rough rollout estimate for a distributed operations team of about 160 employees.",
+    "hint": ""
+  },
+  {
+    "id": "email-10",
+    "from": "Finance Ops <billing@random-payments.co>",
+    "subject": "Final notice: invoice overdue, pay now",
+    "body": "Your account is at risk. Click here immediately and complete a wire transfer today to avoid suspension.",
+    "hint": ""
+  },
+  {
+    "id": "email-11",
+    "from": "Nina Patel <nina@orbitcloud.ai>",
+    "subject": "Board asked us to revisit automation vendors",
+    "body": "We're revisiting automation priorities after a board planning session. This isn't immediate, but we'd like a quick overview deck and a short call next week if possible.",
+    "hint": ""
+  },
+  {
+    "id": "email-12",
+    "from": "Marcus Lee <marcus@novaenergy.com>",
+    "subject": "Existing customer expansion conversation",
+    "body": "We're happy with the current pilot and may expand to three more business units. Please send updated pricing and rollout guidance when you can.",
+    "hint": ""
+  },
+  {
+    "id": "email-13",
+    "from": "Ops Lead <ops@yourcompany.com>",
+    "subject": "Internal note on Monday standup agenda",
+    "body": "Please add the new inbox triage demo to Monday's standup agenda and share the latest screenshots in advance.",
+    "hint": ""
+  },
+  {
+    "id": "email-14",
+    "from": "Taylor Reed <taylor@lighthouselegal.com>",
+    "subject": "Questions about data residency requirements",
+    "body": "We're researching vendors for a legal operations use case. Data residency and admin controls are top priorities. No budget approved yet, but we'd like to understand fit.",
+    "hint": ""
+  },
+  {
+    "id": "email-15",
+    "from": "Grace Wu <grace@acmecorp.com>",
+    "subject": "Follow-up from CIO office",
+    "body": "John asked me to coordinate a deeper technical review. If you can share architecture details and implementation milestones today, we'll circulate them before the executive review.",
+    "hint": ""
+  },
+  {
+    "id": "email-16",
+    "from": "events@communitybuilders.org",
+    "subject": "Invitation to next month's AI breakfast",
+    "body": "We'd love for you to attend our local breakfast panel on AI operations. Register here if interested.",
+    "hint": ""
+  },
+  {
+    "id": "email-17",
+    "from": "Jordan Bell <jordan@umbrellainc.com>",
+    "subject": "Expansion request for support workflows",
+    "body": "Our VP wants to understand whether your team can support an expansion into customer support operations. This would build on our existing relationship if timelines work.",
+    "hint": ""
+  },
+  {
+    "id": "email-18",
+    "from": "Noah Carter <noah@peakmanufacturing.com>",
+    "subject": "RFP timing question",
+    "body": "We expect to release an RFP next month for workflow and exception management. Could you let me know if your team plans to participate and what implementation capacity looks like?",
+    "hint": ""
+  },
+  {
+    "id": "email-19",
+    "from": "Sonia Kapoor <sonia@gmail.com>",
+    "subject": "Quick question about pricing",
+    "body": "I'm exploring tools for a side project and wanted to see whether you offer individual plans. No rush.",
+    "hint": ""
+  },
+  {
+    "id": "email-20",
+    "from": "Riley Stone <riley@globex.com>",
+    "subject": "Need final answers for security review by close of business",
+    "body": "Security review is the last blocker before our steering committee can approve the platform. If we can get answers by close of business, we stay on track for this quarter's rollout.",
+    "hint": ""
+  }
+]

@@ -1,0 +1,18 @@
+services: []
+
+actor:
+  channels:
+    - type: http
+      url: http://localhost:8008/classify
+      method: POST
+      request:
+        message_field: message
+      response:
+        type: json
+        message_field: response
+  config:
+    MAX_TURNS: "1"
+
+agent:
+  entry_point: uvicorn veris_api:app --host 0.0.0.0 --port 8008
+  port: 8008
