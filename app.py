@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import base64
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import streamlit as st
@@ -14,7 +16,14 @@ from escalator import trigger_call
 
 load_dotenv()
 
-st.set_page_config(page_title="InboxROI Agent", layout="wide")
+st.set_page_config(page_title="LeadGuard", layout="wide")
+
+
+def load_logo_b64() -> str:
+    logo_path = Path(__file__).resolve().parent / "assets" / "logo.png"
+    if not logo_path.exists():
+        return ""
+    return base64.b64encode(logo_path.read_bytes()).decode()
 
 
 def inject_styles() -> None:
@@ -22,47 +31,71 @@ def inject_styles() -> None:
         """
         <style>
         :root {
-          --bg: #fbf9f4;
-          --card: #f0ece4;
-          --border: #ded8cc;
-          --text: #1f1f1f;
-          --muted: #666055;
-          --accent: #d65b4a;
-          --amber: #b67a2a;
-          --green: #2f6a4f;
+          --bg: #f0f5ff;
+          --card: #e8f0fe;
+          --border: #c2d4f5;
+          --text: #0d1b3e;
+          --muted: #4a6394;
+          --accent: #0066ff;
+          --amber: #0099cc;
+          --green: #0077aa;
         }
 
         .stApp {
           background:
-            radial-gradient(circle at top left, rgba(214, 91, 74, 0.06), transparent 24%),
-            linear-gradient(180deg, #fcfbf8 0%, #f7f3ec 100%);
+            radial-gradient(circle at top left, rgba(0, 102, 255, 0.06), transparent 30%),
+            linear-gradient(180deg, #f5f8ff 0%, #eef3ff 100%);
         }
 
         .top-shell {
-          background: rgba(255, 255, 255, 0.84);
+          background: rgba(255, 255, 255, 0.92);
           border: 1px solid var(--border);
           border-radius: 24px;
           padding: 1.4rem 1.8rem 1.8rem;
-          box-shadow: 0 14px 40px rgba(37, 32, 24, 0.06);
+          box-shadow: 0 14px 40px rgba(0, 102, 255, 0.08);
         }
 
         .title-row {
           display: flex;
-          justify-content: space-between;
+          flex-direction: column;
           align-items: center;
-          gap: 1rem;
+          gap: 0.6rem;
           margin-bottom: 1.2rem;
         }
 
         .brand {
-          font-size: 2rem;
-          font-weight: 700;
-          letter-spacing: -0.03em;
-          color: var(--text);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.4rem;
+          width: 100%;
         }
 
-        .brand span {
+        .brand-name {
+          font-size: 3.5rem;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          color: var(--text);
+          text-align: center;
+        }
+
+        .brand-name span {
           color: var(--accent);
+        }
+
+        .brand img {
+          height: 14rem;
+          width: auto;
+          filter: drop-shadow(0 0 24px rgba(0, 102, 255, 0.55));
+        }
+
+        [data-testid="stColumn"] {
+          border-right: 1px solid var(--border);
+          padding-right: 0.5rem;
+        }
+
+        [data-testid="stColumn"]:last-child {
+          border-right: none;
         }
 
         .run-meta {
@@ -73,7 +106,7 @@ def inject_styles() -> None:
         .metric-card {
           background: var(--card);
           border-radius: 18px;
-          border: 1px solid rgba(214, 208, 197, 0.75);
+          border: 1px solid var(--border);
           padding: 1rem 1.2rem;
           min-height: 118px;
         }
@@ -103,12 +136,15 @@ def inject_styles() -> None:
 
         .table-head {
           margin-top: 1.5rem;
-          padding: 0 1rem 0.75rem;
-          border-bottom: 1px solid var(--border);
-          color: var(--muted);
-          font-size: 0.86rem;
+          padding: 0.75rem 1rem;
+          border-top: 2px solid var(--accent);
+          border-bottom: 2px solid var(--accent);
+          background: rgba(0, 102, 255, 0.06);
+          color: var(--accent);
+          font-size: 1rem;
+          font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0.06em;
+          letter-spacing: 0.1em;
         }
 
         .sender-block {
@@ -146,10 +182,10 @@ def inject_styles() -> None:
           font-size: 0.92rem;
         }
 
-        .p0 { background: #f8e4e0; color: #b34739; }
-        .p1 { background: #f4e7cf; color: #9c6a22; }
-        .p2 { background: #e7ecef; color: #576675; }
-        .p3 { background: #ece9e2; color: #6d665e; }
+        .p0 { background: #d6e4ff; color: #0044cc; }
+        .p1 { background: #cceeff; color: #006699; }
+        .p2 { background: #e2eaf5; color: #4a6394; }
+        .p3 { background: #edf0f5; color: #7a8faa; }
 
         .row-summary {
           font-size: 1.02rem;
@@ -167,6 +203,22 @@ def inject_styles() -> None:
           font-size: 1.1rem;
           font-weight: 650;
           color: var(--text);
+        }
+
+        header[data-testid="stHeader"] {
+          display: none;
+        }
+
+        .stButton > button[kind="primary"] {
+          background-color: #0066ff;
+          border: none;
+          color: white;
+        }
+
+        .stButton > button[kind="primary"]:hover {
+          background-color: #0052cc;
+          border: none;
+          color: white;
         }
         </style>
         """,
@@ -210,16 +262,15 @@ def get_action_label(action: str) -> str:
 
 def compute_metrics(results: list[dict[str, Any]]) -> dict[str, Any]:
     p0_count = sum(1 for item in results if item.get("priority") == "P0")
-    total_at_risk = sum(int(item.get("cost_to_ignore", 0)) for item in results)
+    total_at_risk = sum(int(item.get("cost_to_ignore", 0)) for item in results if item.get("priority") == "P0")
+    need_reply_today = sum(1 for item in results if item.get("priority") in {"P0", "P1"})
     drafts_ready = sum(1 for item in results if item.get("suggested_action") != "archive")
-    non_archive = [item for item in results if int(item.get("sla_hours", 0)) > 0]
-    avg_sla = round(sum(int(item["sla_hours"]) for item in non_archive) / len(non_archive), 1) if non_archive else 0
     return {
         "p0_count": p0_count,
         "total_at_risk": total_at_risk,
         "emails_scanned": len(results),
+        "need_reply_today": need_reply_today,
         "drafts_ready": drafts_ready,
-        "avg_sla": avg_sla,
     }
 
 
@@ -262,10 +313,10 @@ def render_setup_banner() -> None:
 def render_metric_cards(metrics: dict[str, Any]) -> None:
     columns = st.columns(4)
     cards = [
-        ("P0 Unread", str(metrics["p0_count"]), "alert"),
-        ("Total At Risk", f"${metrics['total_at_risk'] / 1000:,.0f}K", "alert"),
-        ("Avg Response SLA", f"{metrics['avg_sla']} hrs", "warm"),
-        ("Drafts Ready", str(metrics["drafts_ready"]), ""),
+        ("Critical Emails", str(metrics["p0_count"]), "alert"),
+        ("Revenue at Risk", f"${metrics['total_at_risk'] / 1000:,.0f}K", "alert"),
+        ("Need Reply Today", str(metrics["need_reply_today"]), "warm"),
+        ("Replies Ready", str(metrics["drafts_ready"]), ""),
     ]
 
     for column, (label, value, variant) in zip(columns, cards):
@@ -282,11 +333,14 @@ def render_metric_cards(metrics: dict[str, Any]) -> None:
 
 
 def sender_meta(email: dict[str, Any]) -> str:
-    pieces = []
     intel = email.get("company_intel") or {}
+    pieces = []
     if intel.get("company"):
         pieces.append(intel["company"])
-    if email.get("company_domain"):
+    snippet = intel.get("snippet", "")
+    if snippet:
+        pieces.append(snippet[:45] + "…" if len(snippet) > 45 else snippet)
+    elif email.get("company_domain"):
         pieces.append(email["company_domain"])
     if not pieces:
         pieces.append(email.get("sender_email", ""))
@@ -372,9 +426,11 @@ def render_results(results: list[dict[str, Any]]) -> None:
                 message_type = st.warning if call_result.get("simulated") else st.success
                 message_type(call_result["message"])
 
+            st.divider()
+
             with st.expander(
                 "Details",
-                expanded=st.session_state.get("open_detail_id") == email_id or email.get("priority") == "P0",
+                expanded=st.session_state.get("open_detail_id") == email_id,
             ):
                 left, right = st.columns([1.35, 1])
                 with left:
@@ -401,13 +457,18 @@ ensure_session_defaults(emails)
 
 with st.container():
     results = st.session_state["results"]
-    metrics = compute_metrics(results) if results else {"p0_count": 0, "total_at_risk": 0, "emails_scanned": len(emails), "drafts_ready": 0, "avg_sla": 0}
+    metrics = compute_metrics(results) if results else {"p0_count": 0, "total_at_risk": 0, "emails_scanned": len(emails), "need_reply_today": 0, "drafts_ready": 0}
 
     st.markdown('<div class="top-shell">', unsafe_allow_html=True)
+    logo_b64 = load_logo_b64()
+    logo_html = f'<img src="data:image/png;base64,{logo_b64}" alt="LeadGuard" />' if logo_b64 else ""
     st.markdown(
         f"""
         <div class="title-row">
-          <div class="brand">Inbox<span>ROI</span> Agent</div>
+          <div class="brand">
+            {logo_html}
+            <div class="brand-name">Lead<span>Guard</span></div>
+          </div>
           <div class="run-meta">{relative_run_time(st.session_state.get('last_run'), metrics['emails_scanned'])}</div>
         </div>
         """,
