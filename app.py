@@ -247,7 +247,7 @@ def relative_run_time(iso_timestamp: str | None, scanned_count: int) -> str:
         ago = f"{delta // 60} min ago"
     else:
         ago = f"{delta // 3600} hr ago"
-    return f"{scanned_count} emails scanned · last run {ago}"
+    return f"{scanned_count} emails scanned - last run {ago}"
 
 
 def get_action_label(action: str) -> str:
@@ -339,12 +339,12 @@ def sender_meta(email: dict[str, Any]) -> str:
         pieces.append(intel["company"])
     snippet = intel.get("snippet", "")
     if snippet:
-        pieces.append(snippet[:45] + "…" if len(snippet) > 45 else snippet)
+        pieces.append(snippet[:45] + "..." if len(snippet) > 45 else snippet)
     elif email.get("company_domain"):
         pieces.append(email["company_domain"])
     if not pieces:
         pieces.append(email.get("sender_email", ""))
-    return " · ".join(piece for piece in pieces if piece)
+    return " - ".join(piece for piece in pieces if piece)
 
 
 def render_results(results: list[dict[str, Any]]) -> None:
